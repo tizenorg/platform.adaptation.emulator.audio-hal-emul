@@ -1,6 +1,6 @@
 Name:       audio-hal-emul
 Summary:    TIZEN Audio HAL for Emulator
-Version:    0.1.0
+Version:    0.1.1
 Release:    0
 Group:      System/Libraries
 License:    Apache-2.0
@@ -20,7 +20,7 @@ TIZEN Audio HAL for Emulator
 %setup -q -n %{name}-%{version}
 
 %build
-export CFLAGS="$CFLAGS -DTIZEN_DEBUG_ENABLE"
+export CFLAGS="$CFLAGS -DTIZEN_DEBUG_ENABLE -DSYSCONFDIR=\\\"%{_sysconfdir}\\\""
 export CXXFLAGS="$CXXFLAGS -DTIZEN_DEBUG_ENABLE"
 export FFLAGS="$FFLAGS -DTIZEN_DEBUG_ENABLE"
 
