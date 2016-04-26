@@ -165,7 +165,7 @@ audio_return_t _audio_device_deinit(audio_hal_t *ah)
     return AUDIO_RET_OK;
 }
 
-static audio_return_t _do_route_ap_playback_capture(audio_hal_t *ah, audio_route_info_t *route_info)
+static audio_return_t _update_route_ap_playback_capture(audio_hal_t *ah, audio_route_info_t *route_info)
 {
     audio_return_t audio_ret = AUDIO_RET_OK;
     device_info_t *devices = NULL;
@@ -175,7 +175,7 @@ static audio_return_t _do_route_ap_playback_capture(audio_hal_t *ah, audio_route
 
     devices = route_info->device_infos;
 
-    AUDIO_LOG_INFO("do_route_ap_playback_capture++ ");
+    AUDIO_LOG_INFO("update_route_ap_playback_capture++ ");
 
     audio_ret = set_devices(ah, devices, route_info->num_of_devices);
     if (audio_ret) {
@@ -186,14 +186,14 @@ static audio_return_t _do_route_ap_playback_capture(audio_hal_t *ah, audio_route
     return audio_ret;
 }
 
-static audio_return_t _do_route_voip(audio_hal_t *ah, device_info_t *devices, int32_t num_of_devices)
+static audio_return_t _update_route_voip(audio_hal_t *ah, device_info_t *devices, int32_t num_of_devices)
 {
     audio_return_t audio_ret = AUDIO_RET_OK;
 
     AUDIO_RETURN_VAL_IF_FAIL(ah, AUDIO_ERR_PARAMETER);
     AUDIO_RETURN_VAL_IF_FAIL(devices, AUDIO_ERR_PARAMETER);
 
-    AUDIO_LOG_INFO("do_route_voip++");
+    AUDIO_LOG_INFO("update_route_voip++");
 
     audio_ret = set_devices(ah, devices, num_of_devices);
     if (audio_ret) {
@@ -204,7 +204,7 @@ static audio_return_t _do_route_voip(audio_hal_t *ah, device_info_t *devices, in
     return audio_ret;
 }
 
-static audio_return_t _do_route_reset(audio_hal_t *ah, uint32_t direction)
+static audio_return_t _update_route_reset(audio_hal_t *ah, uint32_t direction)
 {
     audio_return_t audio_ret = AUDIO_RET_OK;
     const char *active_devices[MAX_DEVICES] = {NULL,};
@@ -212,7 +212,7 @@ static audio_return_t _do_route_reset(audio_hal_t *ah, uint32_t direction)
 
     AUDIO_RETURN_VAL_IF_FAIL(ah, AUDIO_ERR_PARAMETER);
 
-    AUDIO_LOG_INFO("do_route_reset++, direction(0x%x)", direction);
+    AUDIO_LOG_INFO("update_route_reset++, direction(0x%x)", direction);
 
     if (direction == AUDIO_DIRECTION_OUT) {
         ah->device.active_out &= 0x0;
@@ -248,7 +248,7 @@ static audio_return_t _do_route_reset(audio_hal_t *ah, uint32_t direction)
 
 #define LOOPBACK_ARG_LATENCY_MSEC      30
 #define LOOPBACK_ARG_ADJUST_TIME_SEC   3
-audio_return_t audio_do_route(void *audio_handle, audio_route_info_t *info)
+audio_return_t audio_update_route(void *audio_handle, audio_route_info_t *info)
 {
     audio_return_t audio_ret = AUDIO_RET_OK;
     audio_hal_t *ah = (audio_hal_t *)audio_handle;
@@ -262,12 +262,12 @@ audio_return_t audio_do_route(void *audio_handle, audio_route_info_t *info)
     devices = info->device_infos;
 
     if (!strncmp("voip", info->role, MAX_NAME_LEN)) {
-        audio_ret = _do_route_voip(ah, devices, info->num_of_devices);
+        audio_ret = _update_route_voip(ah, devices, info->num_of_devices);
         if (AUDIO_IS_ERROR(audio_ret)) {
             AUDIO_LOG_WARN("set voip route return 0x%x", audio_ret);
         }
     } else if (!strncmp("reset", info->role, MAX_NAME_LEN)) {
-        audio_ret = _do_route_reset(ah, devices->direction);
+        audio_ret = _update_route_reset(ah, devices->direction);
         if (AUDIO_IS_ERROR(audio_ret)) {
             AUDIO_LOG_WARN("set reset return 0x%x", audio_ret);
         }
@@ -278,7 +278,7 @@ audio_return_t audio_do_route(void *audio_handle, audio_route_info_t *info)
             _audio_comm_send_message(ah, "loopback::adjust_time", LOOPBACK_ARG_ADJUST_TIME_SEC);
         }
         /* need to prepare for "alarm","notification","emergency","voice-information","voice-recognition","ringtone" */
-        audio_ret = _do_route_ap_playback_capture(ah, info);
+        audio_ret = _update_route_ap_playback_capture(ah, info);
         if (AUDIO_IS_ERROR(audio_ret)) {
             AUDIO_LOG_WARN("set playback route return 0x%x", audio_ret);
         }
@@ -286,7 +286,7 @@ audio_return_t audio_do_route(void *audio_handle, audio_route_info_t *info)
     return audio_ret;
 }
 
-audio_return_t audio_update_stream_connection_info(void *audio_handle, audio_stream_info_t *info, uint32_t is_connected)
+audio_return_t audio_notify_stream_connection_changed(void *audio_handle, audio_stream_info_t *info, uint32_t is_connected)
 {
     audio_return_t audio_ret = AUDIO_RET_OK;
     audio_hal_t *ah = (audio_hal_t *)audio_handle;
