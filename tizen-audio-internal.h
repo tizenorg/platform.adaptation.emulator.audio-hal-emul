@@ -4,7 +4,7 @@
 /*
  * audio-hal
  *
- * Copyright (c) 2000 - 2013 Samsung Electronics Co., Ltd. All rights reserved.
+ * Copyright (c) 2015 - 2016 Samsung Electronics Co., Ltd. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -133,41 +133,12 @@ typedef struct device_type {
 /* type definitions */
 typedef signed char int8_t;
 
-/* pcm */
+/* PCM */
 typedef struct {
     snd_pcm_format_t format;
     uint32_t rate;
     uint8_t channels;
 } audio_pcm_sample_spec_t;
-
-/* Device */
-typedef enum audio_device_api {
-    AUDIO_DEVICE_API_UNKNOWN,
-    AUDIO_DEVICE_API_ALSA,
-    AUDIO_DEVICE_API_BLUEZ,
-} audio_device_api_t;
-
-typedef struct audio_device_alsa_info {
-    char *card_name;
-    uint32_t card_idx;
-    uint32_t device_idx;
-} audio_device_alsa_info_t;
-
-typedef struct audio_device_bluz_info {
-    char *protocol;
-    uint32_t nrec;
-} audio_device_bluez_info_t;
-
-typedef struct audio_device_info {
-    audio_device_api_t api;
-    audio_direction_t direction;
-    char *name;
-    uint8_t is_default_device;
-    union {
-        audio_device_alsa_info_t alsa;
-        audio_device_bluez_info_t bluez;
-    };
-} audio_device_info_t;
 
 typedef struct audio_hal_device {
     uint32_t active_in;
@@ -178,7 +149,7 @@ typedef struct audio_hal_device {
     uint32_t pcm_count;
 } audio_hal_device_t;
 
-/* Stream */
+/* Volume */
 #define AUDIO_VOLUME_LEVEL_MAX 16
 
 typedef enum audio_volume {
@@ -224,6 +195,7 @@ typedef struct audio_hal_volume {
     audio_volume_value_table_t *volume_value_table;
 } audio_hal_volume_t;
 
+/* Mixer */
 typedef struct audio_hal_mixer {
     snd_mixer_t *mixer;
     pthread_mutex_t mutex;
@@ -266,36 +238,17 @@ typedef struct audio_hal {
     audio_hal_comm_t comm;
 } audio_hal_t;
 
-typedef struct {
-    unsigned short      is_open; /* if is_open is true, open device; else close device.*/
-    unsigned short      is_headphone;
-    unsigned int        is_downlink_mute;
-    unsigned int        is_uplink_mute;
-} device_ctrl_t;
-
-typedef struct samplerate_ctrl {
-    unsigned int samplerate; /* change samplerate.*/
-} set_samplerate_t;
-
 audio_return_t _audio_volume_init(audio_hal_t *ah);
 audio_return_t _audio_volume_deinit(audio_hal_t *ah);
-audio_return_t _audio_device_init(audio_hal_t *ah);
-audio_return_t _audio_device_deinit(audio_hal_t *ah);
+audio_return_t _audio_routing_init(audio_hal_t *ah);
+audio_return_t _audio_routing_deinit(audio_hal_t *ah);
+audio_return_t _audio_stream_init(audio_hal_t *ah);
+audio_return_t _audio_stream_deinit(audio_hal_t *ah);
+audio_return_t _audio_pcm_init(audio_hal_t *ah);
+audio_return_t _audio_pcm_deinit(audio_hal_t *ah);
 audio_return_t _audio_comm_init(audio_hal_t *ah);
 audio_return_t _audio_comm_deinit(audio_hal_t *ah);
-audio_return_t _audio_util_init(audio_hal_t *ah);
-audio_return_t _audio_util_deinit(audio_hal_t *ah);
 audio_return_t _audio_comm_send_message(audio_hal_t *ah, const char *name, int value);
-audio_return_t _audio_comm_set_message_callback(audio_hal_t *ah, message_cb callback, void *user_data);
-audio_return_t _audio_comm_unset_message_callback(audio_hal_t *ah);
-audio_return_t _audio_mixer_control_set_param(audio_hal_t *ah, const char* ctl_name, snd_ctl_elem_value_t* value, int size);
-audio_return_t _audio_mixer_control_set_value(audio_hal_t *ah, const char *card, const char *ctl_name, int val);
-audio_return_t _audio_mixer_control_set_value_string(audio_hal_t *ah, const char* ctl_name, const char* value);
-audio_return_t _audio_mixer_control_get_value(audio_hal_t *ah, const char *card, const char *ctl_name, int *val);
-audio_return_t _audio_mixer_control_get_element(audio_hal_t *ah, const char *ctl_name, snd_hctl_elem_t **elem);
-audio_return_t _audio_pcm_set_sw_params(snd_pcm_t *pcm, snd_pcm_uframes_t avail_min, uint8_t period_event);
-audio_return_t _audio_pcm_set_hw_params(snd_pcm_t *pcm, audio_pcm_sample_spec_t *sample_spec, uint8_t *use_mmap, snd_pcm_uframes_t *period_size, snd_pcm_uframes_t *buffer_size);
-uint32_t _convert_format(audio_sample_format_t format);
 
 typedef struct _dump_data {
     char *strbuf;
@@ -303,9 +256,9 @@ typedef struct _dump_data {
     char *p;
 } dump_data_t;
 
-dump_data_t* dump_new(int length);
-void dump_add_str(dump_data_t *dump, const char *fmt, ...);
-char* dump_get_str(dump_data_t *dump);
-void dump_free(dump_data_t *dump);
+dump_data_t* _audio_dump_new(int length);
+void _audio_dump_add_str(dump_data_t *dump, const char *fmt, ...);
+char* _audio_dump_get_str(dump_data_t *dump);
+void _audio_dump_free(dump_data_t *dump);
 
 #endif
