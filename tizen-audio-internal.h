@@ -181,7 +181,6 @@ typedef enum audio_gain {
 
 typedef struct audio_volume_value_table {
     double volume[AUDIO_VOLUME_TYPE_MAX][AUDIO_VOLUME_LEVEL_MAX];
-    uint32_t volume_level_max[AUDIO_VOLUME_LEVEL_MAX];
     double gain[AUDIO_GAIN_TYPE_MAX];
 } audio_volume_value_table_t;
 
@@ -191,6 +190,7 @@ enum {
 };
 
 typedef struct audio_hal_volume {
+    uint32_t volume_level_max[AUDIO_VOLUME_LEVEL_MAX];
     uint32_t volume_level[AUDIO_VOLUME_TYPE_MAX];
     audio_volume_value_table_t *volume_value_table;
 } audio_hal_volume_t;

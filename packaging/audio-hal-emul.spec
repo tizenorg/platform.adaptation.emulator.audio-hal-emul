@@ -1,6 +1,6 @@
 Name:       audio-hal-emul
 Summary:    TIZEN Audio HAL for Emulator
-Version:    0.1.5
+Version:    0.1.6
 Release:    0
 Group:      System/Libraries
 License:    Apache-2.0
